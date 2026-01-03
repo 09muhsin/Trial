@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Qur’an Memorisation Planner — Start with Al-Baqarah</title>
+  <style>
+    :root{
+      --bg1:#071018; --bg2:#0b1f2a;
+      --card:#0e2230cc; --card2:#0c1c27cc;
+      --text:#e8f2ff; --muted:#a9c0d8;
+      --accent:#56e6c2; --accent2:#76a8ff;
+      --warn:#ffcc66; --danger:#ff6b6b; --ok:#7CFF9B;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 500px at 20% 10%, rgba(118,168,255,.20), transparent 60%),
+        radial-gradient(900px 600px at 85% 25%, rgba(86,230,194,.18), transparent 55%),
+        radial-gradient(900px 600px at 40% 90%, rgba(255,204,102,.10), transparent 55%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      overflow-x:hidden;
+    }
+    body:before{
+      content:"";
+      position:fixed; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 10px 10px, rgba(255,255,255,.06) 2px, transparent 2.5px),
+        radial-gradient(circle at 30px 30px, rgba(255,255,255,.03) 2px, transparent 2.5px);
+      background-size:40px 40px;
+      opacity:.25;
+      mix-blend-mode:overlay;
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:28px 18px 60px}
+    .top{display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:14px;}
+    .brand{display:flex; gap:12px; align-items:center;}
+    .logo{
+      width:46px; height:46px; border-radius:16px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(118,168,255,.75), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(86,230,194,.75), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      position:relative; overflow:hidden;
+    }
+    .logo:after{
+      content:""; position:absolute; inset:-40%;
+      background: conic-gradient(from 160deg, rgba(255,255,255,.0), rgba(255,255,255,.22), rgba(255,255,255,.0));
+      animation: spin 6s linear infinite; opacity:.5;
+    }
+    @keyframes spin { to{ transform:rotate(360deg)} }
+    h1{margin:0; font-size:clamp(20px, 2.2vw, 28px); letter-spacing:.2px;}
+    .sub{margin-top:4px; color:var(--muted); font-size:14px; line-height:1.4;}
+    .pillRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end}
+    .pill{
+      padding:10px 12px; border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text); font-size:13px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.18);
+      display:flex; gap:8px; align-items:center;
+    }
+    .dot{width:8px; height:8px; border-radius:99px; background:var(--accent)}
+    .dot.blue{background:var(--accent2)}
+    .dot.warn{background:var(--warn)}
+
+    .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; margin-top:14px;}
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} .pillRow{justify-content:flex-start} }
+
+    .card{
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{padding:16px 16px 0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+    .card .title{font-weight:700; letter-spacing:.2px; font-size:16px; display:flex; gap:10px; align-items:center;}
+    .badge{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background: rgba(86,230,194,.12);
+      border:1px solid rgba(86,230,194,.20);
+      color: #bff9ea; white-space:nowrap;
+    }
+    .badge.blue{background: rgba(118,168,255,.12); border-color: rgba(118,168,255,.22); color:#d9e6ff;}
+    .badge.warn{background: rgba(255,204,102,.12); border-color: rgba(255,204,102,.22); color:#ffe6b3;}
+    .card .bd{padding:14px 16px 16px}
+    .muted{color:var(--muted)}
+    .big{font-size:20px; font-weight:800; margin:8px 0 6px; line-height:1.25;}
+    .line{height:1px; background: rgba(255,255,255,.10); margin:14px 0;}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px;}
+    button{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-weight:650;
+      font-size:13px;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      display:inline-flex; gap:8px; align-items:center;
+      user-select:none;
+    }
+    button:hover{background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20)}
+    button:active{transform: translateY(1px)}
+    .primary{background: rgba(86,230,194,.14); border-color: rgba(86,230,194,.28);}
+    .primary:hover{background: rgba(86,230,194,.18)}
+    .danger{background: rgba(255,107,107,.14); border-color: rgba(255,107,107,.28);}
+
+    .kpi{display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:12px;}
+    @media (max-width:540px){ .kpi{grid-template-columns:1fr} }
+    .mini{
+      background: var(--card2);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px;
+    }
+    .mini .label{font-size:12px; color:var(--muted)}
+    .mini .value{font-size:16px; font-weight:800; margin-top:4px}
+    .bar{
+      height:12px; border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden; margin-top:10px;
+    }
+    .bar > div{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, rgba(86,230,194,.9), rgba(118,168,255,.9));
+      border-radius:999px;
+      transition: width .4s ease;
+    }
+
+    .list{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:10px;}
+    .item{
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      cursor:pointer;
+    }
+    .item strong{font-size:13px}
+    .item .meta{font-size:12px; color:var(--muted); margin-top:2px}
+    .chip{
+      font-size:11px; padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+    .chip.done{border-color: rgba(124,255,155,.35); background: rgba(124,255,155,.12); color:#c8ffd7}
+    .chip.today{border-color: rgba(255,204,102,.35); background: rgba(255,204,102,.12); color:#ffe8b8}
+    .chip.future{border-color: rgba(118,168,255,.35); background: rgba(118,168,255,.10); color:#d9e6ff}
+
+    .settingsRow{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;}
+    @media (max-width:540px){ .settingsRow{grid-template-columns:1fr} }
+    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+    input[type="date"], input[type="time"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+    }
+
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+      font-size:13px;
+      display:flex; gap:10px; align-items:center;
+    }
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(-2px)}
+    canvas#confetti{position:fixed; inset:0; pointer-events:none;}
+    .tiny{font-size:12px}
+    .nowrap{white-space:nowrap}
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Qur’an Memorisation Planner</h1>
+          <div class="sub">
+            Order: <b>Al-Baqarah</b> → <b>Aal-Imran</b> → <b>Juz 29</b> → <b>Juz 30</b>
+            <span class="nowrap">— finish by <b>Jan 25, 2026</b></span>
+          </div>
+          <div class="sub tiny" id="startHint"></div>
+        </div>
+      </div>
+
+      <div class="pillRow">
+        <div class="pill"><span class="dot"></span><span id="pillToday">Today:</span></div>
+        <div class="pill"><span class="dot blue"></span><span id="pillCountdown">Countdown:</span></div>
+        <div class="pill"><span class="dot warn"></span><span id="pillStreak">Streak:</span></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <section class="card" aria-label="Today task">
+        <div class="hd">
+          <div class="title">
+            <span aria-hidden="true">📖</span> Today’s Portion
+            <span class="badge" id="badgeDay">Day —</span>
+          </div>
+          <div class="actions">
+            <button id="btnPrev">← Prev</button>
+            <button id="btnNext">Next →</button>
+            <button id="btnGoToday">Today</button>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div class="muted tiny" id="viewDateLine">—</div>
+          <div class="big" id="todayContent">—</div>
+          <div class="muted" id="todayPhase">—</div>
+
+          <div class="line"></div>
+
+          <div class="title" style="font-size:14px; margin-bottom:8px;">
+            <span aria-hidden="true">✅</span> Daily Routine
+          </div>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.65;">
+            <li><b>Morning:</b> memorise the new portion (small chunks).</li>
+            <li><b>Afternoon:</b> repeat + fix with mushaf.</li>
+            <li><b>Evening:</b> revise last 2–3 days from memory.</li>
+          </ul>
+
+          <div class="actions" style="margin-top:14px;">
+            <button class="primary" id="btnToggleDone">Mark as Done</button>
+            <button id="btnCopy">Copy Today’s Task</button>
+            <button class="danger" id="btnReset">Reset Progress</button>
+          </div>
+
+          <div class="kpi">
+            <div class="mini">
+              <div class="label">Progress</div>
+              <div class="value"><span id="doneCount">0</span> / <span id="totalDays">—</span></div>
+              <div class="bar"><div id="barFill"></div></div>
+            </div>
+            <div class="mini">
+              <div class="label">Current Streak</div>
+              <div class="value"><span id="streakCount">0</span> days</div>
+              <div class="muted tiny">Consecutive “done” days up to today.</div>
+            </div>
+            <div class="mini">
+              <div class="label">Finish Date</div>
+              <div class="value" id="finishDate">—</div>
+              <div class="muted tiny">Goal: Jan 25, 2026</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <aside class="card" aria-label="Reminder settings and upcoming">
+        <div class="hd">
+          <div class="title"><span aria-hidden="true">⏰</span> Daily Reminder</div>
+          <span class="badge blue" id="badgeNotify">Notifications: Off</span>
+        </div>
+        <div class="bd">
+          <div class="muted tiny">
+            Notifications work best on <b>https</b> / <b>localhost</b>. If you open as <b>file://</b>, some browsers block notifications.
+          </div>
+
+          <div class="settingsRow">
+            <div>
+              <label for="startDate">Plan Start Date (Day 1 = today)</label>
+              <input id="startDate" type="date" />
+            </div>
+            <div>
+              <label for="remindTime">Reminder Time</label>
+              <input id="remindTime" type="time" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="btnEnableNotif">Enable Notifications</button>
+            <button id="btnTestNotif">Test</button>
+          </div>
+
+          <div class="line"></div>
+
+          <div class="title" style="font-size:14px; margin-bottom:8px;">
+            <span aria-hidden="true">🗓️</span> Next 7 Days
+          </div>
+          <ul class="list" id="next7"></ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Saved.</div>
+
+  <script>
+    // ========= PLAN (44 days) =========
+    // Starts with Al-Baqarah (15 days).
+    // Goal date Jan 25, 2026 assumes Day 1 = Dec 13, 2025 (you can adjust start date on the right).
+    const PLAN = [
+      // ---- Al-Baqarah (15 days) ----
+      {day:1,  phase:"Al-Baqarah", content:"Al-Baqarah 1–19"},
+      {day:2,  phase:"Al-Baqarah", content:"Al-Baqarah 20–38"},
+      {day:3,  phase:"Al-Baqarah", content:"Al-Baqarah 39–57"},
+      {day:4,  phase:"Al-Baqarah", content:"Al-Baqarah 58–76"},
+      {day:5,  phase:"Al-Baqarah", content:"Al-Baqarah 77–95"},
+      {day:6,  phase:"Al-Baqarah", content:"Al-Baqarah 96–114"},
+      {day:7,  phase:"Al-Baqarah", content:"Al-Baqarah 115–133"},
+      {day:8,  phase:"Al-Baqarah", content:"Al-Baqarah 134–152"},
+      {day:9,  phase:"Al-Baqarah", content:"Al-Baqarah 153–171"},
+      {day:10, phase:"Al-Baqarah", content:"Al-Baqarah 172–190"},
+      {day:11, phase:"Al-Baqarah", content:"Al-Baqarah 191–209"},
+      {day:12, phase:"Al-Baqarah", content:"Al-Baqarah 210–228"},
+      {day:13, phase:"Al-Baqarah", content:"Al-Baqarah 229–247"},
+      {day:14, phase:"Al-Baqarah", content:"Al-Baqarah 248–266"},
+      {day:15, phase:"Al-Baqarah", content:"Al-Baqarah 267–286"},
+
+      // ---- Aal-Imran (10 days) ----
+      {day:16, phase:"Aal-Imran", content:"Aal-Imran 1–20"},
+      {day:17, phase:"Aal-Imran", content:"Aal-Imran 21–40"},
+      {day:18, phase:"Aal-Imran", content:"Aal-Imran 41–60"},
+      {day:19, phase:"Aal-Imran", content:"Aal-Imran 61–80"},
+      {day:20, phase:"Aal-Imran", content:"Aal-Imran 81–100"},
+      {day:21, phase:"Aal-Imran", content:"Aal-Imran 101–120"},
+      {day:22, phase:"Aal-Imran", content:"Aal-Imran 121–140"},
+      {day:23, phase:"Aal-Imran", content:"Aal-Imran 141–160"},
+      {day:24, phase:"Aal-Imran", content:"Aal-Imran 161–180"},
+      {day:25, phase:"Aal-Imran", content:"Aal-Imran 181–200"},
+
+      // ---- Juz 29 (8 days) ----
+      {day:26, phase:"Juz 29", content:"Surah Al-Mulk (67)"},
+      {day:27, phase:"Juz 29", content:"Surah Al-Qalam (68)"},
+      {day:28, phase:"Juz 29", content:"Surah Al-Haqqah (69)"},
+      {day:29, phase:"Juz 29", content:"Surah Al-Ma'arij (70)"},
+      {day:30, phase:"Juz 29", content:"Surah Nuh (71) + Surah Al-Jinn (72)"},
+      {day:31, phase:"Juz 29", content:"Surah Al-Muzzammil (73) + Surah Al-Muddathir (74)"},
+      {day:32, phase:"Juz 29", content:"Surah Al-Qiyamah (75) + Surah Al-Insan (76)"},
+      {day:33, phase:"Juz 29", content:"Surah Al-Mursalat (77)"},
+
+      // ---- Juz 30 (11 days) ----
+      {day:34, phase:"Juz 30", content:"Surah An-Naba (78)"},
+      {day:35, phase:"Juz 30", content:"Surah An-Nazi'at (79)"},
+      {day:36, phase:"Juz 30", content:"Surah 'Abasa (80)"},
+      {day:37, phase:"Juz 30", content:"Surah At-Takwir (81) + Surah Al-Infitar (82)"},
+      {day:38, phase:"Juz 30", content:"Surah Al-Mutaffifin (83)"},
+      {day:39, phase:"Juz 30", content:"Surah Al-Inshiqaq (84) + Surah Al-Buruj (85)"},
+      {day:40, phase:"Juz 30", content:"Surah At-Tariq (86) + Surah Al-A'la (87) + Surah Al-Ghashiyah (88)"},
+      {day:41, phase:"Juz 30", content:"Surah Al-Fajr (89) + Surah Al-Balad (90)"},
+      {day:42, phase:"Juz 30", content:"Surah Ash-Shams (91) + Surah Al-Layl (92) + Surah Ad-Duha (93) + Surah Ash-Sharh/Al-Inshirah (94)"},
+      {day:43, phase:"Juz 30", content:"Surah At-Tin (95) + Surah Al-'Alaq (96) + Al-Qadr (97) + Al-Bayyinah (98) + Az-Zalzalah (99) + Al-'Adiyat (100) + Al-Qari'ah (101) + At-Takathur (102) + Al-'Asr (103) + Al-Humazah (104) + Al-Fil (105) + Quraysh (106)"},
+      {day:44, phase:"Juz 30", content:"Surah Al-Ma'un (107) + Al-Kawthar (108) + Al-Kafirun (109) + An-Nasr (110) + Al-Masad (111) + Al-Ikhlas (112) + Al-Falaq (113) + An-Nas (114)"},
+    ];
+
+    // ========= UTIL =========
+    const $ = (id) => document.getElementById(id);
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function toISODate(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+    function localMidnight(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    function parseLocalDateInput(value){
+      const [y,m,day] = value.split("-").map(Number);
+      return new Date(y, m-1, day);
+    }
+    function formatDate(d){
+      const opts = {weekday:"short", year:"numeric", month:"short", day:"numeric"};
+      return d.toLocaleDateString(undefined, opts);
+    }
+
+    // ========= STORAGE =========
+    const KEY = {
+      startDate: "qm_startDate",
+      remindTime: "qm_remindTime",
+      doneMap: "qm_doneMap",
+      notifEnabled: "qm_notifEnabled",
+    };
+    function loadJSON(key, fallback){
+      try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+      catch{ return fallback; }
+    }
+    function saveJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+    function toast(msg){
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 1400);
+    }
+
+    // ========= DEFAULT START = TODAY =========
+    function computeTomorrowISO(){
+      const t = new Date();           // now = today
+      return toISODate(t);            // no +1 day
+    }
+
+    // ========= STATE =========
+    const GOAL_DATE = new Date(2026, 0, 25); // Jan 25, 2026
+    const TOTAL_DAYS = PLAN.length;
+
+    let settings = {
+      startDate: localStorage.getItem(KEY.startDate) ?? computeTomorrowISO(),
+      remindTime: localStorage.getItem(KEY.remindTime) ?? "06:00",
+      notifEnabled: localStorage.getItem(KEY.notifEnabled) === "true",
+    };
+    let doneMap = loadJSON(KEY.doneMap, {});
+    let viewDate = new Date();
+
+    // ========= CORE =========
+    function getDayNumber(forDate){
+      const start = parseLocalDateInput(settings.startDate);
+      const diffMs = localMidnight(forDate) - localMidnight(start);
+      const diffDays = Math.floor(diffMs / (24*60*60*1000));
+      return diffDays + 1;
+    }
+    function getPlanItem(dayNumber){
+      if(dayNumber < 1 || dayNumber > TOTAL_DAYS) return null;
+      return PLAN[dayNumber - 1];
+    }
+    function isDone(dayNumber){ return !!doneMap[String(dayNumber)]; }
+    function setDone(dayNumber, value){
+      doneMap[String(dayNumber)] = !!value;
+      saveJSON(KEY.doneMap, doneMap);
+    }
+    function countDone(){
+      let c=0;
+      for(let i=1;i<=TOTAL_DAYS;i++) if(isDone(i)) c++;
+      return c;
+    }
+    function computeStreak(){
+      const today = new Date();
+      const todayDay = getDayNumber(today);
+      let streak = 0;
+      for(let d = todayDay; d>=1; d--){
+        if(getPlanItem(d) && isDone(d)) streak++;
+        else break;
+      }
+      return streak;
+    }
+    function countdownText(){
+      const today = localMidnight(new Date());
+      const goal = localMidnight(GOAL_DATE);
+      const diff = Math.ceil((goal - today) / (24*60*60*1000));
+      if(diff < 0) return "Goal date passed";
+      if(diff === 0) return "Goal is today!";
+      return diff + " days left";
+    }
+
+    // ========= RENDER =========
+    function render(){
+      $("startDate").value = settings.startDate;
+      $("remindTime").value = settings.remindTime;
+
+      $("finishDate").textContent = formatDate(GOAL_DATE);
+      $("totalDays").textContent = TOTAL_DAYS;
+
+      const today = new Date();
+      const todayDay = getDayNumber(today);
+
+      const viewDay = getDayNumber(viewDate);
+      const item = getPlanItem(viewDay);
+
+      $("pillToday").textContent = `Today: ${formatDate(today)}`;
+      $("pillCountdown").textContent = `Countdown: ${countdownText()}`;
+      $("pillStreak").textContent = `Streak: ${computeStreak()} day(s)`;
+
+      $("badgeNotify").textContent = `Notifications: ${settings.notifEnabled ? "On" : "Off"}`;
+      $("badgeNotify").className = "badge " + (settings.notifEnabled ? "blue" : "warn");
+
+      $("startHint").textContent = `Day 1 is set to: ${formatDate(parseLocalDateInput(settings.startDate))} (editable on the right)`;
+
+      if(!item){
+        $("badgeDay").textContent = "Day —";
+        $("viewDateLine").textContent = `${formatDate(viewDate)} • Outside the plan — adjust start date.`;
+        $("todayContent").textContent = "No task for this date.";
+        $("todayPhase").textContent = "Tip: Change “Plan Start Date (Day 1)”.";
+        $("btnToggleDone").disabled = true;
+        $("btnToggleDone").textContent = "Mark as Done";
+      }else{
+        $("badgeDay").textContent = `Day ${item.day} / ${TOTAL_DAYS}`;
+        $("viewDateLine").textContent = `${formatDate(viewDate)} • ${viewDay === todayDay ? "Viewing: Today ✅" : "Viewing: Another day"}`;
+        $("todayContent").textContent = item.content;
+        $("todayPhase").textContent = item.phase;
+
+        $("btnToggleDone").disabled = false;
+        const done = isDone(item.day);
+        $("btnToggleDone").textContent = done ? "Done ✓ (Undo)" : "Mark as Done";
+      }
+
+      const done = countDone();
+      $("doneCount").textContent = done;
+      const pct = Math.round((done / TOTAL_DAYS) * 100);
+      $("barFill").style.width = pct + "%";
+
+      $("streakCount").textContent = computeStreak();
+      renderNext7();
+    }
+
+    function renderNext7(){
+      const ul = $("next7");
+      ul.innerHTML = "";
+      const base = localMidnight(new Date());
+
+      for(let i=0;i<7;i++){
+        const d = new Date(base);
+        d.setDate(d.getDate()+i);
+
+        const dn = getDayNumber(d);
+        const item = getPlanItem(dn);
+
+        const li = document.createElement("li");
+        li.className = "item";
+
+        const left = document.createElement("div");
+        const title = document.createElement("strong");
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        if(item){
+          title.textContent = `${formatDate(d)} — Day ${dn}`;
+          meta.textContent = `${item.phase} • ${item.content}`;
+        }else{
+          title.textContent = `${formatDate(d)}`;
+          meta.textContent = "Outside the plan (adjust start date).";
+        }
+
+        const chip = document.createElement("div");
+        chip.className = "chip";
+
+        const todayDay = getDayNumber(new Date());
+        if(dn === todayDay) { chip.classList.add("today"); chip.textContent="Today"; }
+        else if(item && isDone(item.day)) { chip.classList.add("done"); chip.textContent="Done"; }
+        else { chip.classList.add("future"); chip.textContent = item ? "Upcoming" : "—"; }
+
+        left.appendChild(title);
+        left.appendChild(meta);
+        li.appendChild(left);
+        li.appendChild(chip);
+
+        li.addEventListener("click", ()=>{
+          viewDate = d;
+          render();
+          toast("Opened that day.");
+        });
+
+        ul.appendChild(li);
+      }
+    }
+
+    // ========= ACTIONS =========
+    $("btnPrev").addEventListener("click", ()=>{
+      viewDate = new Date(localMidnight(viewDate));
+      viewDate.setDate(viewDate.getDate()-1);
+      render();
+    });
+    $("btnNext").addEventListener("click", ()=>{
+      viewDate = new Date(localMidnight(viewDate));
+      viewDate.setDate(viewDate.getDate()+1);
+      render();
+    });
+    $("btnGoToday").addEventListener("click", ()=>{
+      viewDate = new Date();
+      render();
+      toast("Back to today.");
+    });
+
+    $("btnToggleDone").addEventListener("click", ()=>{
+      const dn = getDayNumber(viewDate);
+      const item = getPlanItem(dn);
+      if(!item) return;
+
+      const newVal = !isDone(item.day);
+      setDone(item.day, newVal);
+
+      if(newVal){
+        confettiBurst();
+        toast("Marked done. Allahumma barik!");
+      }else{
+        toast("Undone.");
+      }
+      render();
+    });
+
+    $("btnCopy").addEventListener("click", async ()=>{
+      const dn = getDayNumber(viewDate);
+      const item = getPlanItem(dn);
+      const d = formatDate(viewDate);
+      const text = item
+        ? `📖 Qur’an Memorisation — ${d}\nDay ${item.day}/${TOTAL_DAYS}\n${item.phase}\nToday: ${item.content}`
+        : `Qur’an Memorisation — ${d}\nNo task (outside plan).`;
+      try{
+        await navigator.clipboard.writeText(text);
+        toast("Copied!");
+      }catch{
+        toast("Copy failed (browser blocked).");
+      }
+    });
+
+    $("btnReset").addEventListener("click", ()=>{
+      if(!confirm("Reset all progress (done marks)?")) return;
+      doneMap = {};
+      saveJSON(KEY.doneMap, doneMap);
+      toast("Progress reset.");
+      render();
+    });
+
+    $("startDate").addEventListener("change", (e)=>{
+      settings.startDate = e.target.value || computeTomorrowISO();
+      localStorage.setItem(KEY.startDate, settings.startDate);
+      toast("Start date saved.");
+      render();
+      scheduleDailyReminder();
+    });
+
+    $("remindTime").addEventListener("change", (e)=>{
+      settings.remindTime = e.target.value || "06:00";
+      localStorage.setItem(KEY.remindTime, settings.remindTime);
+      toast("Reminder time saved.");
+      scheduleDailyReminder();
+    });
+
+    // ========= NOTIFICATIONS =========
+    let reminderTimer = null;
+    let reminderInterval = null;
+
+    function notify(title, body){
+      if(!("Notification" in window)) return;
+      if(Notification.permission !== "granted") return;
+      new Notification(title, { body });
+    }
+
+    function nextReminderDelayMs(){
+      const [hh, mm] = settings.remindTime.split(":").map(Number);
+      const now = new Date();
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
+      if(target <= now) target.setDate(target.getDate()+1);
+      return target - now;
+    }
+
+    function scheduleDailyReminder(){
+      clearTimeout(reminderTimer);
+      clearInterval(reminderInterval);
+
+      if(!settings.notifEnabled) return;
+      if(!("Notification" in window)) return;
+      if(Notification.permission !== "granted") return;
+
+      const delay = nextReminderDelayMs();
+      reminderTimer = setTimeout(()=>{
+        fireReminder();
+        reminderInterval = setInterval(fireReminder, 24*60*60*1000);
+      }, delay);
+
+      toast("Daily reminder scheduled.");
+    }
+
+    function fireReminder(){
+      const today = new Date();
+      const dn = getDayNumber(today);
+      const item = getPlanItem(dn);
+
+      const title = "📖 Qur’an Memorisation Reminder";
+      const body = item
+        ? `Day ${dn}/${TOTAL_DAYS} • ${item.content}`
+        : "No task today (outside plan). Adjust start date if needed.";
+
+      notify(title, body);
+    }
+
+    $("btnEnableNotif").addEventListener("click", async ()=>{
+      if(!("Notification" in window)){
+        toast("Notifications not supported.");
+        return;
+      }
+      try{
+        const perm = await Notification.requestPermission();
+        if(perm === "granted"){
+          settings.notifEnabled = true;
+          localStorage.setItem(KEY.notifEnabled, "true");
+          toast("Notifications enabled.");
+          render();
+          scheduleDailyReminder();
+        }else{
+          settings.notifEnabled = false;
+          localStorage.setItem(KEY.notifEnabled, "false");
+          toast("Permission not granted.");
+          render();
+        }
+      }catch{
+        toast("Notification request failed.");
+      }
+    });
+
+    $("btnTestNotif").addEventListener("click", ()=>{
+      if(!("Notification" in window)){
+        toast("Notifications not supported.");
+        return;
+      }
+      if(Notification.permission !== "granted"){
+        toast("Enable notifications first.");
+        return;
+      }
+      fireReminder();
+      toast("Test sent.");
+    });
+
+    // ========= CONFETTI =========
+    const c = document.getElementById("confetti");
+    const ctx = c.getContext("2d");
+    let particles = [];
+    function resizeCanvas(){
+      c.width = window.innerWidth * devicePixelRatio;
+      c.height = window.innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function confettiBurst(){
+      const W = window.innerWidth, H = window.innerHeight;
+      const originX = W * 0.50;
+      const originY = H * 0.20;
+
+      const n = 150;
+      for(let i=0;i<n;i++){
+        particles.push({
+          x: originX, y: originY,
+          vx: (Math.random()*8-4),
+          vy: (Math.random()*-10-6),
+          g: 0.22 + Math.random()*0.10,
+          r: 2 + Math.random()*3,
+          a: 1,
+          spin: (Math.random()*0.2-0.1),
+          rot: Math.random()*Math.PI,
+          life: 90 + Math.random()*40,
+        });
+      }
+      animateConfetti();
+    }
+
+    let animating = false;
+    function animateConfetti(){
+      if(animating) return;
+      animating = true;
+
+      function tick(){
+        ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+        particles = particles.filter(p => p.life > 0 && p.a > 0.02);
+        for(const p of particles){
+          p.life -= 1;
+          p.vy += p.g;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.spin;
+          p.a *= 0.985;
+
+          ctx.save();
+          ctx.globalAlpha = p.a;
+
+          const pick = Math.random();
+          let fill = "rgba(86,230,194,0.9)";
+          if(pick < 0.33) fill = "rgba(118,168,255,0.9)";
+          else if(pick < 0.66) fill = "rgba(255,204,102,0.9)";
+
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = fill;
+          ctx.fillRect(-p.r, -p.r*0.6, p.r*2.2, p.r*1.2);
+          ctx.restore();
+        }
+
+        if(particles.length > 0){
+          requestAnimationFrame(tick);
+        }else{
+          ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+          animating = false;
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ========= INIT =========
+    function init(){
+      viewDate = new Date();
+      render();
+      if(settings.notifEnabled && "Notification" in window && Notification.permission === "granted"){
+        scheduleDailyReminder();
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
